@@ -1,0 +1,42 @@
+---
+rules:
+  www.zhipin.com:
+    pathname: \/(?:(\w\d+-?)+)|job_detail\/
+    ItemList: .search-job-list-wrap .job-list li
+    ItemCompany: .company-text h3 a[ka]
+    ItemAddBtn: .company-text h3.name
+    BlockBtnStyle: >
+      float: left;
+      height: 26px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: .3em;
+    ItemSalarySelector: .job-limit .red
+    ItemSalaryReg: (?:(\d+)-(\d+)K(?:·(\d+)薪)?)|(\d+)-(\d+)\/天
+  www.lagou.com:
+    pathname: \/(?:zhaopin\/chanpinjingli1)|jobs\/
+    ItemList: .s_position_list .con_list_item
+    ItemCompany: .company_name a
+    ItemAddBtn: .company_name
+    BlockBtnStyle: >
+      float: left;
+      display: inline-block;
+      height: 18px;
+      margin-right: .3em;
+      margin-top: 12px;
+      position: relative;
+    ItemSalarySelector: .money
+    ItemSalaryReg: (\d+)k-(\d+)k
+    onRefresh: .item_con_pager
+  www.liepin.com:
+    pathname: \/(?:zhaopin)\/
+    ItemList: '#sojob ul.sojob-list li'
+    ItemCompany: .company-name a
+    ItemAddBtn: .field-financing
+    BlockBtnStyle: >
+      display: inline-block;
+      margin-right: .3em;
+    ItemSalarySelector: .job-info .text-warning
+    ItemSalaryReg: (\d+)-(\d+)k(?:·(\d+)薪)?
+
