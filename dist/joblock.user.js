@@ -1,12 +1,14 @@
 
 // ==UserScript==
-// @name Joblock
-// @name:zh-CN 求职助手（按条件屏蔽公司）
-// @namespace http://tampermonkey.net/
-// @version 0.2002.22.1582361464866
-// @description 1. 快捷添加企业黑名单； 2. 年薪显示 3. 依据年薪过滤工作 4. 目前支持Boss直聘、拉勾网
+// @name Joblock 招聘求职
+// @name:zh-CN 招聘求职助手（按条件屏蔽公司）
+// @namespace 203x
+// @version 0.2002.22.1582368494040
+// @description:zh-CN 1. 支持 黑名单、白名单、低关注名单 2. 计算年薪，以及依据年薪过滤 3. 带GUI界面，可以即时导出，导入 4. 支持Boss直聘、拉勾网、猎聘网
 // @author 203X
-// @include http://localhost:3300/
+// @updateURL https://github.com/203x/userscript-joblock/raw/master/dist/joblock.user.js
+// @license MIT
+// @compatible chrome, firefox, safari
 // @match *://www.zhipin.com/*
 // @match *://www.lagou.com/*
 // @match *://www.liepin.com/*
@@ -1247,7 +1249,7 @@
     function create_if_block$2(ctx) {
     	let current;
     	const panel = new Panel({});
-    	panel.$on("save", /*onSave*/ ctx[2]);
+    	panel.$on("save", /*onSave*/ ctx[1]);
     	panel.$on("close", /*close_handler*/ ctx[7]);
 
     	return {
@@ -1277,16 +1279,7 @@
     function create_fragment$2(ctx) {
     	let div;
     	let span;
-    	let t0;
-    	let t1_value = /*total*/ ctx[1].low + "";
-    	let t1;
-    	let t2;
-    	let t3_value = /*total*/ ctx[1].black + "";
-    	let t3;
-    	let t4;
-    	let t5_value = /*total*/ ctx[1].cheap + "";
-    	let t5;
-    	let t6;
+    	let t;
     	let if_block_anchor;
     	let current;
     	let dispose;
@@ -1298,13 +1291,7 @@
     			div = element("div");
     			span = element("span");
     			create_component(icon.$$.fragment);
-    			t0 = space();
-    			t1 = text(t1_value);
-    			t2 = text(" - ");
-    			t3 = text(t3_value);
-    			t4 = text(" - ");
-    			t5 = text(t5_value);
-    			t6 = space();
+    			t = space();
     			if (if_block) if_block.c();
     			if_block_anchor = empty();
     			attr(span, "class", "x-btn-icon");
@@ -1313,23 +1300,13 @@
     			insert(target, div, anchor);
     			append(div, span);
     			mount_component(icon, span, null);
-    			append(div, t0);
-    			append(div, t1);
-    			append(div, t2);
-    			append(div, t3);
-    			append(div, t4);
-    			append(div, t5);
-    			insert(target, t6, anchor);
+    			insert(target, t, anchor);
     			if (if_block) if_block.m(target, anchor);
     			insert(target, if_block_anchor, anchor);
     			current = true;
     			dispose = listen(span, "click", /*click_handler*/ ctx[6]);
     		},
     		p(ctx, [dirty]) {
-    			if ((!current || dirty & /*total*/ 2) && t1_value !== (t1_value = /*total*/ ctx[1].low + "")) set_data(t1, t1_value);
-    			if ((!current || dirty & /*total*/ 2) && t3_value !== (t3_value = /*total*/ ctx[1].black + "")) set_data(t3, t3_value);
-    			if ((!current || dirty & /*total*/ 2) && t5_value !== (t5_value = /*total*/ ctx[1].cheap + "")) set_data(t5, t5_value);
-
     			if (/*visible*/ ctx[0] === true) {
     				if (if_block) {
     					if_block.p(ctx, dirty);
@@ -1364,7 +1341,7 @@
     		d(detaching) {
     			if (detaching) detach(div);
     			destroy_component(icon);
-    			if (detaching) detach(t6);
+    			if (detaching) detach(t);
     			if (if_block) if_block.d(detaching);
     			if (detaching) detach(if_block_anchor);
     			dispose();
@@ -1387,7 +1364,7 @@
     function instance$2($$self, $$props, $$invalidate) {
     	let $salary;
     	component_subscribe($$self, salary, $$value => $$invalidate(4, $salary = $$value));
-    	let visible = true;
+    	let visible = false;
     	let joblock = null;
     	let total = { black: 0, white: 0, low: 0, cheap: 0 };
 
@@ -1401,21 +1378,21 @@
 
     	onMount(() => {
     		joblock = new Joblock(jobs => {
-    				$$invalidate(1, total = { black: 0, white: 0, low: 0, cheap: 0 });
+    				total = { black: 0, white: 0, low: 0, cheap: 0 };
 
     				jobs.forEach(job => {
     					let level = 0;
 
     					if (isSalary(job)) {
-    						$$invalidate(1, total.cheap += 1, total);
+    						total.cheap += 1;
     						level = 9;
     					} else if (isLow(job)) {
-    						$$invalidate(1, total.low += 1, total);
+    						total.low += 1;
     						level = 1;
     					} else if (isWhite(job)) {
-    						$$invalidate(1, total.white += 1, total);
+    						total.white += 1;
     					} else if (isBlack(job)) {
-    						$$invalidate(1, total.black += 1, total);
+    						total.black += 1;
     						level = 8;
     					}
 
@@ -1447,9 +1424,9 @@
 
     	return [
     		visible,
-    		total,
     		onSave,
     		joblock,
+    		total,
     		$salary,
     		isSalary,
     		click_handler,
@@ -1482,102 +1459,5 @@
 
 }());
 
-GM_addStyle(`.icon-svg{width:1em;height:1em;vertical-align:-0.15em;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;overflow:hidden}
-label.svelte-1015qvh{display:block;margin-bottom:10px}
-.x-btn {
-  display: inline-block;
-  line-height: 1em;
-  cursor: pointer;
-  user-select: none; }
-
-.blacklist {
-  color: #000 !important; }
-
-#x-joblock {
-  position: fixed;
-  bottom: 1em;
-  left: 1em;
-  font-size: 14px; }
-  #x-joblock .x-btn-icon {
-    display: inline-block;
-    line-height: 1em;
-    cursor: pointer;
-    user-select: none;
-    padding: 3px;
-    border-radius: 5px;
-    transition: all 300ms;
-    background-color: #fff;
-    color: #555;
-    box-shadow: 0px 0.44216px 1.32946px rgba(0, 0, 0, 0.0383736), 0px 2.23281px 4.4812px rgba(0, 0, 0, 0.0479094), 0px 12px 22px rgba(0, 0, 0, 0.07); }
-    #x-joblock .x-btn-icon:hover {
-      color: #151515; }
-    #x-joblock .x-btn-icon:active {
-      background-color: #f2f2f2;
-      box-shadow: 0px 0.14739px 1.28114px rgba(0, 0, 0, 0.0331141), 0px 0.74427px 4.20501px rgba(0, 0, 0, 0.0445642), 0px 4px 22px rgba(0, 0, 0, 0.07); }
-  #x-joblock ul {
-    list-style: none; }
-  #x-joblock ul,
-  #x-joblock ol,
-  #x-joblock li {
-    margin: 0;
-    padding: 0; }
-  #x-joblock .x-panel .tab-nav {
-    display: flex;
-    min-width: 300px;
-    border-bottom: 1px solid #eee; }
-    #x-joblock .x-panel .tab-nav .tab-nav-li {
-      margin-right: 0.5em;
-      padding: 0.5em 0;
-      color: #666;
-      cursor: pointer; }
-      #x-joblock .x-panel .tab-nav .tab-nav-li.activa {
-        color: #000;
-        font-weight: bold; }
-  #x-joblock .x-panel .x-body {
-    padding: 0.5em 0;
-    height: 160px;
-    display: flex;
-    flex-direction: column; }
-    #x-joblock .x-panel .x-body textarea {
-      flex-grow: 1; }
-    #x-joblock .x-panel .x-body input, #x-joblock .x-panel .x-body input[type="number"], #x-joblock .x-panel .x-body textarea {
-      border: 1px solid #eee;
-      padding: 0.2em;
-      border-radius: 3px;
-      font-size: 12px;
-      transition: all 200ms ease; }
-      #x-joblock .x-panel .x-body input:hover, #x-joblock .x-panel .x-body input:focus, #x-joblock .x-panel .x-body input[type="number"]:hover, #x-joblock .x-panel .x-body input[type="number"]:focus, #x-joblock .x-panel .x-body textarea:hover, #x-joblock .x-panel .x-body textarea:focus {
-        border: 1px solid #aaa; }
-  #x-joblock .x-panel .x-footer {
-    margin-top: 0.5em;
-    display: flex;
-    flex-direction: row-reverse; }
-  #x-joblock .x-panel .x-btn {
-    padding: 0.2em 0.8em;
-    border-radius: 3px;
-    line-height: 1.2em;
-    font-size: 0.9em;
-    margin-left: 0.5em;
-    border: 1px solid #eee; }
-  #x-joblock .x-panel .x-tip {
-    color: #e63131;
-    font-size: 0.8em;
-    margin-right: 0.5em; }
-
-.x-panel {
-  position: absolute;
-  bottom: 2em;
-  left: 0;
-  padding: 10px;
-  border: 1px solid #eee;
-  border-radius: 5px;
-  background-color: #fff; }
-
-[data-level='1'] {
-  opacity: 0.2; }
-
-[data-level='8'],
-[data-level='9'] {
-  display: none !important; }
-
+GM_addStyle(`.icon-svg{width:1em;height:1em;vertical-align:-.15em;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;overflow:hidden}label.svelte-1015qvh{display:block;margin-bottom:10px}.x-btn{display:inline-block;line-height:1em;cursor:pointer;user-select:none}.blacklist{color:#000!important}#x-joblock{position:fixed;bottom:1em;left:1em;font-size:14px}#x-joblock .x-btn-icon{display:inline-block;line-height:1em;cursor:pointer;user-select:none;padding:3px;border-radius:5px;transition:all .3s;background-color:#fff;color:#555;box-shadow:0 .44216px 1.32946px rgba(0,0,0,.0383736),0 2.23281px 4.4812px rgba(0,0,0,.0479094),0 12px 22px rgba(0,0,0,.07)}#x-joblock .x-btn-icon:hover{color:#151515}#x-joblock .x-btn-icon:active{background-color:#f2f2f2;box-shadow:0 .14739px 1.28114px rgba(0,0,0,.0331141),0 .74427px 4.20501px rgba(0,0,0,.0445642),0 4px 22px rgba(0,0,0,.07)}#x-joblock ul{list-style:none}#x-joblock li,#x-joblock ol,#x-joblock ul{margin:0;padding:0}#x-joblock .x-panel .tab-nav{display:flex;min-width:300px;border-bottom:1px solid #eee}#x-joblock .x-panel .tab-nav .tab-nav-li{margin-right:.5em;padding:.5em 0;color:#666;cursor:pointer}#x-joblock .x-panel .tab-nav .tab-nav-li.activa{color:#000;font-weight:700}#x-joblock .x-panel .x-body{padding:.5em 0;height:160px;display:flex;flex-direction:column}#x-joblock .x-panel .x-body textarea{flex-grow:1}#x-joblock .x-panel .x-body input,#x-joblock .x-panel .x-body input[type=number],#x-joblock .x-panel .x-body textarea{border:1px solid #eee;padding:.2em;border-radius:3px;font-size:12px;transition:all .2s ease}#x-joblock .x-panel .x-body input:focus,#x-joblock .x-panel .x-body input:hover,#x-joblock .x-panel .x-body input[type=number]:focus,#x-joblock .x-panel .x-body input[type=number]:hover,#x-joblock .x-panel .x-body textarea:focus,#x-joblock .x-panel .x-body textarea:hover{border:1px solid #aaa}#x-joblock .x-panel .x-footer{margin-top:.5em;display:flex;flex-direction:row-reverse}#x-joblock .x-panel .x-btn{padding:.2em .8em;border-radius:3px;line-height:1.2em;font-size:.9em;margin-left:.5em;border:1px solid #eee}#x-joblock .x-panel .x-tip{color:#e63131;font-size:.8em;margin-right:.5em}.x-panel{position:absolute;bottom:2em;left:0;padding:10px;border:1px solid #eee;border-radius:5px;background-color:#fff}[data-level="1"]{opacity:.2}[data-level="8"],[data-level="9"]{display:none!important}
 `);

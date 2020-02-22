@@ -1,0 +1,2 @@
+*.svelte linguist-language=JavaScript
+*.html linguist-language=TypeScript

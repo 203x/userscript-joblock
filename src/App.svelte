@@ -5,7 +5,7 @@
   import { blacklist, whitelist, lowlist, salary } from './stores.js'
   import { onMount } from 'svelte'
 
-  let visible = true
+  let visible = false
 
   let joblock = null
 
@@ -81,16 +81,15 @@
 </script>
 
 <div>
-<span
-  class="x-btn-icon"
-  on:click={() => {
-    visible = !visible
-  }}>
-  <Icon type="star" />
-</span>
-{total.low} - {total.black} - {total.cheap}
+  <span
+    class="x-btn-icon"
+    on:click={() => {
+      visible = !visible
+    }}>
+    <Icon type="star" />
+  </span>
+  <!-- {total.low} - {total.black} - {total.cheap} -->
 </div>
-
 
 {#if visible === true}
   <Panel

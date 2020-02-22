@@ -1,12 +1,15 @@
 ---
-  name: Joblock
-  name:zh-CN: 求职助手（按条件屏蔽公司）
-  namespace: http://tampermonkey.net/
+  name: Joblock 招聘求职
+  name:zh-CN: 招聘求职助手（按条件屏蔽公司）
+  namespace: 203x
   version: 0.2002.22.0
-  description: 1. 快捷添加企业黑名单； 2. 年薪显示 3. 依据年薪过滤工作 4. 目前支持Boss直聘、拉勾网
+  description:zh-CN: 1. 支持 黑名单、白名单、低关注名单 2. 计算年薪，以及依据年薪过滤 3. 带GUI界面，可以即时导出，导入 4. 支持Boss直聘、拉勾网、猎聘网
   author: 203X
-  include:
-    - http://localhost:3300/
+  updateURL: https://github.com/203x/userscript-joblock/raw/master/dist/joblock.user.js
+  license: MIT
+  compatible: chrome, firefox, safari
+  # include:
+  #   - http://localhost:3300/
   match:
     - '*://www.zhipin.com/*'
     - '*://www.lagou.com/*'
