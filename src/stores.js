@@ -16,7 +16,7 @@ function createStore(name, defaultState) {
 }
 
 export const salary = createStore('salary', {
-  enable: true,
+  enable: false,
   lower: 12,
   upper: 20,
 })

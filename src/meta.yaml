@@ -2,10 +2,11 @@
   name: Joblock 招聘求职
   name:zh-CN: 招聘求职助手（按条件屏蔽公司）
   namespace: 203x
-  version: 0.2002.22.0
+  version: 0.2002.24.0
   description:zh-CN: 1. 支持 黑名单、白名单、低关注名单 2. 计算年薪，以及依据年薪过滤 3. 带GUI界面，可以即时导出，导入 4. 支持Boss直聘、拉勾网、猎聘网
   author: 203X
   updateURL: https://github.com/203x/userscript-joblock/raw/master/dist/joblock.user.js
+  supportURL: https://github.com/203x/userscript-joblock
   license: MIT
   compatible: chrome, firefox, safari
   # include:
@@ -18,6 +19,7 @@
     - GM_getValue
     - GM_setValue
     - GM_addStyle
+    - GM_registerMenuCommand
     - GM_log
     # - GM_registerMenuCommand
     # - GM_listValues

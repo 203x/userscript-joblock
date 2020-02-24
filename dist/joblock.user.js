@@ -3,10 +3,11 @@
 // @name Joblock 招聘求职
 // @name:zh-CN 招聘求职助手（按条件屏蔽公司）
 // @namespace 203x
-// @version 0.2002.22.1582368494040
+// @version 0.2002.24.1582526328005
 // @description:zh-CN 1. 支持 黑名单、白名单、低关注名单 2. 计算年薪，以及依据年薪过滤 3. 带GUI界面，可以即时导出，导入 4. 支持Boss直聘、拉勾网、猎聘网
 // @author 203X
 // @updateURL https://github.com/203x/userscript-joblock/raw/master/dist/joblock.user.js
+// @supportURL https://github.com/203x/userscript-joblock
 // @license MIT
 // @compatible chrome, firefox, safari
 // @match *://www.zhipin.com/*
@@ -15,6 +16,7 @@
 // @grant GM_getValue
 // @grant GM_setValue
 // @grant GM_addStyle
+// @grant GM_registerMenuCommand
 // @grant GM_log
 // @run-at document-end
 // ==/UserScript==
@@ -444,7 +446,6 @@
                 });
             }
             else {
-                // console.log(this.el, this.rule.ItemAddBtn, this.el.querySelectorAll(this.rule.ItemAddBtn));
                 GM_log('Joblock找不到：' + this.rule.ItemAddBtn);
             }
         }
@@ -703,7 +704,7 @@
     }
 
     const salary = createStore('salary', {
-      enable: true,
+      enable: false,
       lower: 12,
       upper: 20,
     });
@@ -750,22 +751,22 @@
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[19] = list[i];
-    	child_ctx[21] = i;
+    	child_ctx[20] = list[i];
+    	child_ctx[22] = i;
     	return child_ctx;
     }
 
-    // (70:4) {#each arr as item, i}
+    // (71:4) {#each arr as item, i}
     function create_each_block(ctx) {
     	let li;
-    	let t0_value = /*item*/ ctx[19] + "";
+    	let t0_value = /*item*/ ctx[20] + "";
     	let t0;
     	let t1;
     	let li_class_value;
     	let dispose;
 
     	function click_handler(...args) {
-    		return /*click_handler*/ ctx[12](/*i*/ ctx[21], ...args);
+    		return /*click_handler*/ ctx[13](/*i*/ ctx[22], ...args);
     	}
 
     	return {
@@ -773,7 +774,7 @@
     			li = element("li");
     			t0 = text(t0_value);
     			t1 = space();
-    			attr(li, "class", li_class_value = "tab-nav-li " + (/*i*/ ctx[21] === /*index*/ ctx[0] ? "activa" : ""));
+    			attr(li, "class", li_class_value = "tab-nav-li " + (/*i*/ ctx[22] === /*index*/ ctx[1] ? "activa" : ""));
     		},
     		m(target, anchor) {
     			insert(target, li, anchor);
@@ -784,7 +785,7 @@
     		p(new_ctx, dirty) {
     			ctx = new_ctx;
 
-    			if (dirty & /*index*/ 1 && li_class_value !== (li_class_value = "tab-nav-li " + (/*i*/ ctx[21] === /*index*/ ctx[0] ? "activa" : ""))) {
+    			if (dirty & /*index*/ 2 && li_class_value !== (li_class_value = "tab-nav-li " + (/*i*/ ctx[22] === /*index*/ ctx[1] ? "activa" : ""))) {
     				attr(li, "class", li_class_value);
     			}
     		},
@@ -795,7 +796,34 @@
     	};
     }
 
-    // (98:26) 
+    // (107:26) 
+    function create_if_block_4(ctx) {
+    	let textarea;
+    	let dispose;
+
+    	return {
+    		c() {
+    			textarea = element("textarea");
+    			attr(textarea, "placeholder", "");
+    		},
+    		m(target, anchor) {
+    			insert(target, textarea, anchor);
+    			set_input_value(textarea, /*list*/ ctx[2].whitelist);
+    			dispose = listen(textarea, "input", /*textarea_input_handler_2*/ ctx[19]);
+    		},
+    		p(ctx, dirty) {
+    			if (dirty & /*list*/ 4) {
+    				set_input_value(textarea, /*list*/ ctx[2].whitelist);
+    			}
+    		},
+    		d(detaching) {
+    			if (detaching) detach(textarea);
+    			dispose();
+    		}
+    	};
+    }
+
+    // (105:26) 
     function create_if_block_3(ctx) {
     	let textarea;
     	let dispose;
@@ -807,12 +835,12 @@
     		},
     		m(target, anchor) {
     			insert(target, textarea, anchor);
-    			set_input_value(textarea, /*list*/ ctx[1].whitelist);
-    			dispose = listen(textarea, "input", /*textarea_input_handler_2*/ ctx[18]);
+    			set_input_value(textarea, /*list*/ ctx[2].blacklist);
+    			dispose = listen(textarea, "input", /*textarea_input_handler_1*/ ctx[18]);
     		},
     		p(ctx, dirty) {
-    			if (dirty & /*list*/ 2) {
-    				set_input_value(textarea, /*list*/ ctx[1].whitelist);
+    			if (dirty & /*list*/ 4) {
+    				set_input_value(textarea, /*list*/ ctx[2].blacklist);
     			}
     		},
     		d(detaching) {
@@ -822,7 +850,7 @@
     	};
     }
 
-    // (96:26) 
+    // (103:26) 
     function create_if_block_2(ctx) {
     	let textarea;
     	let dispose;
@@ -834,12 +862,12 @@
     		},
     		m(target, anchor) {
     			insert(target, textarea, anchor);
-    			set_input_value(textarea, /*list*/ ctx[1].blacklist);
-    			dispose = listen(textarea, "input", /*textarea_input_handler_1*/ ctx[17]);
+    			set_input_value(textarea, /*list*/ ctx[2].lowlist);
+    			dispose = listen(textarea, "input", /*textarea_input_handler*/ ctx[17]);
     		},
     		p(ctx, dirty) {
-    			if (dirty & /*list*/ 2) {
-    				set_input_value(textarea, /*list*/ ctx[1].blacklist);
+    			if (dirty & /*list*/ 4) {
+    				set_input_value(textarea, /*list*/ ctx[2].lowlist);
     			}
     		},
     		d(detaching) {
@@ -849,35 +877,8 @@
     	};
     }
 
-    // (94:26) 
+    // (90:26) 
     function create_if_block_1(ctx) {
-    	let textarea;
-    	let dispose;
-
-    	return {
-    		c() {
-    			textarea = element("textarea");
-    			attr(textarea, "placeholder", "");
-    		},
-    		m(target, anchor) {
-    			insert(target, textarea, anchor);
-    			set_input_value(textarea, /*list*/ ctx[1].lowlist);
-    			dispose = listen(textarea, "input", /*textarea_input_handler*/ ctx[16]);
-    		},
-    		p(ctx, dirty) {
-    			if (dirty & /*list*/ 2) {
-    				set_input_value(textarea, /*list*/ ctx[1].lowlist);
-    			}
-    		},
-    		d(detaching) {
-    			if (detaching) detach(textarea);
-    			dispose();
-    		}
-    	};
-    }
-
-    // (81:4) {#if index === 0}
-    function create_if_block$1(ctx) {
     	let label0;
     	let input0;
     	let t0;
@@ -895,12 +896,12 @@
 
     	function input1_input_handler() {
     		input1_updating = true;
-    		/*input1_input_handler*/ ctx[14].call(input1);
+    		/*input1_input_handler*/ ctx[15].call(input1);
     	}
 
     	function input2_input_handler() {
     		input2_updating = true;
-    		/*input2_input_handler*/ ctx[15].call(input2);
+    		/*input2_input_handler*/ ctx[16].call(input2);
     	}
 
     	return {
@@ -932,38 +933,38 @@
     		m(target, anchor) {
     			insert(target, label0, anchor);
     			append(label0, input0);
-    			input0.checked = /*new_salary*/ ctx[2].enable;
+    			input0.checked = /*new_salary*/ ctx[3].enable;
     			append(label0, t0);
     			insert(target, t1, anchor);
     			insert(target, label1, anchor);
     			append(label1, t2);
     			append(label1, input1);
-    			set_input_value(input1, /*new_salary*/ ctx[2].upper);
+    			set_input_value(input1, /*new_salary*/ ctx[3].upper);
     			insert(target, t3, anchor);
     			insert(target, label2, anchor);
     			append(label2, t4);
     			append(label2, input2);
-    			set_input_value(input2, /*new_salary*/ ctx[2].lower);
+    			set_input_value(input2, /*new_salary*/ ctx[3].lower);
 
     			dispose = [
-    				listen(input0, "change", /*input0_change_handler*/ ctx[13]),
+    				listen(input0, "change", /*input0_change_handler*/ ctx[14]),
     				listen(input1, "input", input1_input_handler),
     				listen(input2, "input", input2_input_handler)
     			];
     		},
     		p(ctx, dirty) {
-    			if (dirty & /*new_salary*/ 4) {
-    				input0.checked = /*new_salary*/ ctx[2].enable;
+    			if (dirty & /*new_salary*/ 8) {
+    				input0.checked = /*new_salary*/ ctx[3].enable;
     			}
 
-    			if (!input1_updating && dirty & /*new_salary*/ 4) {
-    				set_input_value(input1, /*new_salary*/ ctx[2].upper);
+    			if (!input1_updating && dirty & /*new_salary*/ 8) {
+    				set_input_value(input1, /*new_salary*/ ctx[3].upper);
     			}
 
     			input1_updating = false;
 
-    			if (!input2_updating && dirty & /*new_salary*/ 4) {
-    				set_input_value(input2, /*new_salary*/ ctx[2].lower);
+    			if (!input2_updating && dirty & /*new_salary*/ 8) {
+    				set_input_value(input2, /*new_salary*/ ctx[3].lower);
     			}
 
     			input2_updating = false;
@@ -975,6 +976,100 @@
     			if (detaching) detach(t3);
     			if (detaching) detach(label2);
     			run_all(dispose);
+    		}
+    	};
+    }
+
+    // (82:4) {#if index === 0}
+    function create_if_block$1(ctx) {
+    	let ul;
+    	let li0;
+    	let t0;
+    	let t1_value = /*statis*/ ctx[0].black + "";
+    	let t1;
+    	let t2;
+    	let li1;
+    	let t3;
+    	let t4_value = /*statis*/ ctx[0].white + "";
+    	let t4;
+    	let t5;
+    	let li2;
+    	let t6;
+    	let t7_value = /*statis*/ ctx[0].low + "";
+    	let t7;
+    	let t8;
+    	let li3;
+    	let t9;
+    	let t10_value = /*statis*/ ctx[0].cheap + "";
+    	let t10;
+    	let t11;
+    	let li4;
+    	let t12;
+    	let t13_value = /*statis*/ ctx[0].black + /*statis*/ ctx[0].white + /*statis*/ ctx[0].low + /*statis*/ ctx[0].cheap + "";
+    	let t13;
+    	let t14;
+    	let t15_value = /*statis*/ ctx[0].total + "";
+    	let t15;
+
+    	return {
+    		c() {
+    			ul = element("ul");
+    			li0 = element("li");
+    			t0 = text("黑名单：");
+    			t1 = text(t1_value);
+    			t2 = space();
+    			li1 = element("li");
+    			t3 = text("白名单：");
+    			t4 = text(t4_value);
+    			t5 = space();
+    			li2 = element("li");
+    			t6 = text("低关注：");
+    			t7 = text(t7_value);
+    			t8 = space();
+    			li3 = element("li");
+    			t9 = text("低年薪：");
+    			t10 = text(t10_value);
+    			t11 = space();
+    			li4 = element("li");
+    			t12 = text("总计：");
+    			t13 = text(t13_value);
+    			t14 = text("/");
+    			t15 = text(t15_value);
+    		},
+    		m(target, anchor) {
+    			insert(target, ul, anchor);
+    			append(ul, li0);
+    			append(li0, t0);
+    			append(li0, t1);
+    			append(ul, t2);
+    			append(ul, li1);
+    			append(li1, t3);
+    			append(li1, t4);
+    			append(ul, t5);
+    			append(ul, li2);
+    			append(li2, t6);
+    			append(li2, t7);
+    			append(ul, t8);
+    			append(ul, li3);
+    			append(li3, t9);
+    			append(li3, t10);
+    			append(ul, t11);
+    			append(ul, li4);
+    			append(li4, t12);
+    			append(li4, t13);
+    			append(li4, t14);
+    			append(li4, t15);
+    		},
+    		p(ctx, dirty) {
+    			if (dirty & /*statis*/ 1 && t1_value !== (t1_value = /*statis*/ ctx[0].black + "")) set_data(t1, t1_value);
+    			if (dirty & /*statis*/ 1 && t4_value !== (t4_value = /*statis*/ ctx[0].white + "")) set_data(t4, t4_value);
+    			if (dirty & /*statis*/ 1 && t7_value !== (t7_value = /*statis*/ ctx[0].low + "")) set_data(t7, t7_value);
+    			if (dirty & /*statis*/ 1 && t10_value !== (t10_value = /*statis*/ ctx[0].cheap + "")) set_data(t10, t10_value);
+    			if (dirty & /*statis*/ 1 && t13_value !== (t13_value = /*statis*/ ctx[0].black + /*statis*/ ctx[0].white + /*statis*/ ctx[0].low + /*statis*/ ctx[0].cheap + "")) set_data(t13, t13_value);
+    			if (dirty & /*statis*/ 1 && t15_value !== (t15_value = /*statis*/ ctx[0].total + "")) set_data(t15, t15_value);
+    		},
+    		d(detaching) {
+    			if (detaching) detach(ul);
     		}
     	};
     }
@@ -993,7 +1088,7 @@
     	let span2;
     	let t6;
     	let dispose;
-    	let each_value = /*arr*/ ctx[4];
+    	let each_value = /*arr*/ ctx[5];
     	let each_blocks = [];
 
     	for (let i = 0; i < each_value.length; i += 1) {
@@ -1001,10 +1096,11 @@
     	}
 
     	function select_block_type(ctx, dirty) {
-    		if (/*index*/ ctx[0] === 0) return create_if_block$1;
-    		if (/*index*/ ctx[0] === 1) return create_if_block_1;
-    		if (/*index*/ ctx[0] === 2) return create_if_block_2;
-    		if (/*index*/ ctx[0] === 3) return create_if_block_3;
+    		if (/*index*/ ctx[1] === 0) return create_if_block$1;
+    		if (/*index*/ ctx[1] === 1) return create_if_block_1;
+    		if (/*index*/ ctx[1] === 2) return create_if_block_2;
+    		if (/*index*/ ctx[1] === 3) return create_if_block_3;
+    		if (/*index*/ ctx[1] === 4) return create_if_block_4;
     	}
 
     	let current_block_type = select_block_type(ctx);
@@ -1031,7 +1127,7 @@
     			span1.textContent = "关闭";
     			t5 = space();
     			span2 = element("span");
-    			t6 = text(/*tip*/ ctx[3]);
+    			t6 = text(/*tip*/ ctx[4]);
     			attr(ul, "class", "tab-nav");
     			attr(div0, "class", "x-body");
     			attr(span0, "class", "x-btn");
@@ -1061,13 +1157,13 @@
     			append(span2, t6);
 
     			dispose = [
-    				listen(span0, "click", /*save*/ ctx[5]),
-    				listen(span1, "click", /*close*/ ctx[6])
+    				listen(span0, "click", /*save*/ ctx[6]),
+    				listen(span1, "click", /*close*/ ctx[7])
     			];
     		},
     		p(ctx, [dirty]) {
-    			if (dirty & /*index, arr*/ 17) {
-    				each_value = /*arr*/ ctx[4];
+    			if (dirty & /*index, arr*/ 34) {
+    				each_value = /*arr*/ ctx[5];
     				let i;
 
     				for (i = 0; i < each_value.length; i += 1) {
@@ -1101,7 +1197,7 @@
     				}
     			}
 
-    			if (dirty & /*tip*/ 8) set_data(t6, /*tip*/ ctx[3]);
+    			if (dirty & /*tip*/ 16) set_data(t6, /*tip*/ ctx[4]);
     		},
     		i: noop,
     		o: noop,
@@ -1131,12 +1227,13 @@
     	let $whitelist;
     	let $lowlist;
     	let $salary;
-    	component_subscribe($$self, blacklist, $$value => $$invalidate(7, $blacklist = $$value));
-    	component_subscribe($$self, whitelist, $$value => $$invalidate(8, $whitelist = $$value));
-    	component_subscribe($$self, lowlist, $$value => $$invalidate(9, $lowlist = $$value));
-    	component_subscribe($$self, salary, $$value => $$invalidate(10, $salary = $$value));
+    	component_subscribe($$self, blacklist, $$value => $$invalidate(8, $blacklist = $$value));
+    	component_subscribe($$self, whitelist, $$value => $$invalidate(9, $whitelist = $$value));
+    	component_subscribe($$self, lowlist, $$value => $$invalidate(10, $lowlist = $$value));
+    	component_subscribe($$self, salary, $$value => $$invalidate(11, $salary = $$value));
+    	let { statis } = $$props;
     	let index = 0;
-    	let arr = ["年薪配置", "低关注名单", "黑名单", "白名单"];
+    	let arr = ["统计", "年薪配置", "低关注名单", "黑名单", "白名单"];
 
     	let list = {
     		blacklist: "",
@@ -1148,10 +1245,10 @@
     	let tip = "";
 
     	onMount(() => {
-    		$$invalidate(1, list.blacklist = arr2str($blacklist), list);
-    		$$invalidate(1, list.whitelist = arr2str($whitelist), list);
-    		$$invalidate(1, list.lowlist = arr2str($lowlist), list);
-    		$$invalidate(2, new_salary = $salary);
+    		$$invalidate(2, list.blacklist = arr2str($blacklist), list);
+    		$$invalidate(2, list.whitelist = arr2str($whitelist), list);
+    		$$invalidate(2, list.lowlist = arr2str($lowlist), list);
+    		$$invalidate(3, new_salary = $salary);
     	});
 
     	const dispatch = createEventDispatcher();
@@ -1162,15 +1259,15 @@
     			whitelist.set(str2arr(list.whitelist));
     			lowlist.set(str2arr(list.lowlist));
     			salary.set(new_salary);
-    			$$invalidate(3, tip = "已保存");
+    			$$invalidate(4, tip = "已保存");
     			dispatch("save", {});
     		} catch(error) {
-    			$$invalidate(3, tip = error);
+    			$$invalidate(4, tip = error);
     		}
 
     		setTimeout(
     			() => {
-    				$$invalidate(3, tip = "");
+    				$$invalidate(4, tip = "");
     			},
     			3000
     		);
@@ -1181,40 +1278,45 @@
     	}
 
     	const click_handler = i => {
-    		$$invalidate(0, index = i);
+    		$$invalidate(1, index = i);
     	};
 
     	function input0_change_handler() {
     		new_salary.enable = this.checked;
-    		$$invalidate(2, new_salary);
+    		$$invalidate(3, new_salary);
     	}
 
     	function input1_input_handler() {
     		new_salary.upper = to_number(this.value);
-    		$$invalidate(2, new_salary);
+    		$$invalidate(3, new_salary);
     	}
 
     	function input2_input_handler() {
     		new_salary.lower = to_number(this.value);
-    		$$invalidate(2, new_salary);
+    		$$invalidate(3, new_salary);
     	}
 
     	function textarea_input_handler() {
     		list.lowlist = this.value;
-    		$$invalidate(1, list);
+    		$$invalidate(2, list);
     	}
 
     	function textarea_input_handler_1() {
     		list.blacklist = this.value;
-    		$$invalidate(1, list);
+    		$$invalidate(2, list);
     	}
 
     	function textarea_input_handler_2() {
     		list.whitelist = this.value;
-    		$$invalidate(1, list);
+    		$$invalidate(2, list);
     	}
 
+    	$$self.$set = $$props => {
+    		if ("statis" in $$props) $$invalidate(0, statis = $$props.statis);
+    	};
+
     	return [
+    		statis,
     		index,
     		list,
     		new_salary,
@@ -1240,7 +1342,7 @@
     class Panel extends SvelteComponent {
     	constructor(options) {
     		super();
-    		init(this, options, instance$1, create_fragment$1, safe_not_equal, {});
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { statis: 0 });
     	}
     }
 
@@ -1248,8 +1350,8 @@
 
     function create_if_block$2(ctx) {
     	let current;
-    	const panel = new Panel({});
-    	panel.$on("save", /*onSave*/ ctx[1]);
+    	const panel = new Panel({ props: { statis: /*statis*/ ctx[1] } });
+    	panel.$on("save", /*onSave*/ ctx[2]);
     	panel.$on("close", /*close_handler*/ ctx[7]);
 
     	return {
@@ -1260,7 +1362,11 @@
     			mount_component(panel, target, anchor);
     			current = true;
     		},
-    		p: noop,
+    		p(ctx, dirty) {
+    			const panel_changes = {};
+    			if (dirty & /*statis*/ 2) panel_changes.statis = /*statis*/ ctx[1];
+    			panel.$set(panel_changes);
+    		},
     		i(local) {
     			if (current) return;
     			transition_in(panel.$$.fragment, local);
@@ -1366,7 +1472,14 @@
     	component_subscribe($$self, salary, $$value => $$invalidate(4, $salary = $$value));
     	let visible = false;
     	let joblock = null;
-    	let total = { black: 0, white: 0, low: 0, cheap: 0 };
+
+    	let statis = {
+    		black: 0,
+    		white: 0,
+    		low: 0,
+    		cheap: 0,
+    		total: 0
+    	};
 
     	function isSalary(job) {
     		if ($salary.enable === false || !job.salary) {
@@ -1378,21 +1491,27 @@
 
     	onMount(() => {
     		joblock = new Joblock(jobs => {
-    				total = { black: 0, white: 0, low: 0, cheap: 0 };
+    				$$invalidate(1, statis = {
+    					black: 0,
+    					white: 0,
+    					low: 0,
+    					cheap: 0,
+    					total: jobs.length
+    				});
 
     				jobs.forEach(job => {
     					let level = 0;
 
     					if (isSalary(job)) {
-    						total.cheap += 1;
+    						$$invalidate(1, statis.cheap += 1, statis);
     						level = 9;
     					} else if (isLow(job)) {
-    						total.low += 1;
+    						$$invalidate(1, statis.low += 1, statis);
     						level = 1;
     					} else if (isWhite(job)) {
-    						total.white += 1;
+    						$$invalidate(1, statis.white += 1, statis);
     					} else if (isBlack(job)) {
-    						total.black += 1;
+    						$$invalidate(1, statis.black += 1, statis);
     						level = 8;
     					}
 
@@ -1408,6 +1527,10 @@
     					list.add(company);
     				}
     			});
+
+    		GM_registerMenuCommand("Config", () => {
+    			$$invalidate(0, visible = !visible);
+    		});
     	});
 
     	function onSave() {
@@ -1424,9 +1547,9 @@
 
     	return [
     		visible,
+    		statis,
     		onSave,
     		joblock,
-    		total,
     		$salary,
     		isSalary,
     		click_handler,
@@ -1445,7 +1568,6 @@
         const ContainerApp = document.createElement('DIV');
         ContainerApp.setAttribute('id', 'x-joblock');
         document.body.appendChild(ContainerApp);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const app = new App({
             target: ContainerApp,
         });

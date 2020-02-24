@@ -33,7 +33,7 @@ const plugins = [
     emitCss: true,
   }),
   postcss({ extract: true, minimize: production }),
-  typescript({ tsconfig: 'tsconfig.json' }),
+  typescript({ removeComments: production, tsconfig: 'tsconfig.json' }),
   commonjs(),
   userMeta({
     path: 'src/meta.yaml',

@@ -9,11 +9,12 @@
 
   let joblock = null
 
-  let total = {
+  let statis = {
     black: 0,
     white: 0,
     low: 0,
     cheap: 0,
+    total: 0
   }
 
   function isSalary(job) {
@@ -40,28 +41,30 @@
   onMount(() => {
     joblock = new Joblock(
       jobs => {
-        total = {
+        statis = {
           black: 0,
           white: 0,
           low: 0,
           cheap: 0,
+          total: jobs.length
         }
         jobs.forEach(job => {
           let level = 0
           if (isSalary(job)) {
-            total.cheap += 1
+            statis.cheap += 1
             level = 9
           } else if (isLow(job)) {
-            total.low += 1
+            statis.low += 1
             level = 1
           } else if (isWhite(job)) {
-            total.white += 1
+            statis.white += 1
           } else if (isBlack(job)) {
-            total.black += 1
+            statis.black += 1
             level = 8
           }
           job.level = level
         })
+
         // GM_log(total)
       },
       (type, company) => {
@@ -73,6 +76,9 @@
         }
       }
     )
+    GM_registerMenuCommand('Config', ()=>{
+      visible = !visible
+    })
   })
 
   function onSave() {
@@ -93,6 +99,7 @@
 
 {#if visible === true}
   <Panel
+    {statis}
     on:save={onSave}
     on:close={() => {
       visible = false

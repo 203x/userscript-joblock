@@ -2,8 +2,9 @@
   import { createEventDispatcher } from 'svelte'
   import { onMount } from 'svelte'
   import { blacklist, whitelist, lowlist, salary } from '../stores.js'
+  export let statis;
   let index = 0
-  let arr = ['年薪配置', '低关注名单', '黑名单', '白名单']
+  let arr = ['统计','年薪配置', '低关注名单', '黑名单', '白名单']
 
   let list = {
     blacklist: '',
@@ -79,6 +80,14 @@
   </ul>
   <div class="x-body">
     {#if index === 0}
+    <ul>
+      <li>黑名单：{statis.black}</li>
+      <li>白名单：{statis.white}</li>
+      <li>低关注：{statis.low}</li>
+      <li>低年薪：{statis.cheap}</li>
+      <li>总计：{statis.black + statis.white + statis.low + statis.cheap}/{statis.total}</li>
+    </ul>
+    {:else if index === 1}
       <label>
         <input type="checkbox" bind:checked={new_salary.enable} />
         启用年薪过滤
@@ -91,11 +100,11 @@
         年薪阙值（下限）
         <input type="number" bind:value={new_salary.lower} min="0" max="1000" />
       </label>
-    {:else if index === 1}
-      <textarea bind:value={list.lowlist} placeholder="" />
     {:else if index === 2}
-      <textarea bind:value={list.blacklist} placeholder="" />
+      <textarea bind:value={list.lowlist} placeholder="" />
     {:else if index === 3}
+      <textarea bind:value={list.blacklist} placeholder="" />
+    {:else if index === 4}
       <textarea bind:value={list.whitelist} placeholder="" />
     {/if}
   </div>
