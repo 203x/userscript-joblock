@@ -17,7 +17,7 @@ function meta2str(data) {
     }
   }
 
-  return [start, ...usm, end].map(text => '// ' + text).join('\n') + '\n'
+  return [start, ...usm, end].map((text) => '// ' + text).join('\n') + '\n'
 }
 
 export default function userMeta(options = {}) {

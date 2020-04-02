@@ -1,5 +1,5 @@
 <script>
-  import Joblock from './Joblock'
+  import Joblock from './joblock'
   import Icon from './components/Icon.svelte'
   import Panel from './components/Panel.svelte'
   import { blacklist, whitelist, lowlist, salary } from './stores.js'

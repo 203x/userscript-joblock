@@ -63,25 +63,27 @@ class Joblock {
   getJobs(): Job[] {
     try {
       return this.rule && reg(this.rule.pathname)
-        ? Array.from(document.querySelectorAll(this.rule.ItemList)).map(el => {
-            if (this.jobs) {
-              for (const iterator of this.jobs) {
-                if (iterator.el === el) {
-                  return iterator
+        ? Array.from(document.querySelectorAll(this.rule.ItemList)).map(
+            (el) => {
+              if (this.jobs) {
+                for (const iterator of this.jobs) {
+                  if (iterator.el === el) {
+                    return iterator
+                  }
                 }
               }
+              return new Job(
+                el,
+                this.rule,
+                (type: 'low' | 'black', company: string) => {
+                  if (isFunction(this.onChange)) {
+                    this.onChange(type, company)
+                  }
+                  this.refresh()
+                }
+              )
             }
-            return new Job(
-              el,
-              this.rule,
-              (type: 'low' | 'black', company: string) => {
-                if (isFunction(this.onChange)) {
-                  this.onChange(type, company)
-                }
-                this.refresh()
-              }
-            )
-          })
+          )
         : []
     } catch (error) {
       return []
