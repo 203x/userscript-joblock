@@ -1,5 +1,5 @@
 import commonjs from '@rollup/plugin-commonjs'
-import resolve from '@rollup/plugin-node-resolve'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
 import yaml from '@rollup/plugin-yaml'
 import postcss from 'rollup-plugin-postcss'
@@ -23,16 +23,16 @@ const plugins = [
   string({
     include: ['**/*.html', '**/*.svg'],
   }),
-  resolve({
-    customResolveOptions: {
-      moduleDirectory: 'node_modules',
-    },
-  }),
+  nodeResolve(),
   svelte({
     include: 'src/**/*.svelte',
     emitCss: true,
   }),
-  postcss({ extract: true, minimize: production }),
+  postcss({ 
+    extensions: ['.css', '.scss', '.sass'],
+    extract: true,
+    minimize: production
+  }),
   typescript({ removeComments: production, tsconfig: 'tsconfig.json' }),
   commonjs(),
   userMeta({

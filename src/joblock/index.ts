@@ -6,7 +6,8 @@ interface Rules {
   [key: string]: Rule
 }
 
-function isFunction(obj: any): boolean {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isFunction(obj: any): obj is Function {
   return Object.prototype.toString.call(obj) === '[object Function]'
 }
 

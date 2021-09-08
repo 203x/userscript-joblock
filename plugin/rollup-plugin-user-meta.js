@@ -25,7 +25,7 @@ export default function userMeta(options = {}) {
     name: 'user-meta',
     banner() {
       if (options.path) {
-        let meta = YAML.safeLoad(fs.readFileSync(options.path, 'utf8'))
+        let meta = YAML.load(fs.readFileSync(options.path, 'utf8'))
         if (options.version) {
           let version = meta.version.split('.')
           if (version.length > 0) {
